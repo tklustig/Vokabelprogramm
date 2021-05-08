@@ -12,7 +12,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Vokabelprogramm
 {
-    public partial class Form1 : Form
+    public partial class Main : Form
     {
         //Ab hier werden Klassenmember definiert
 
@@ -59,9 +59,9 @@ namespace Vokabelprogramm
         private DataGridView DataGridView_ErrorList = new DataGridView();
         private static string userName = Environment.UserName;
         //instanziert ein Objekt der Klasse DirectoryInfo mit obigem Parameter für den Konstruktor der Klasse DirectInfo
-        private DirectoryInfo Main_Directory = new DirectoryInfo(@"C:\\Users\\" + userName + "\\Documents\\Vokabelprogramm\\Listen");
+        private DirectoryInfo Main_Directory = new DirectoryInfo(@"C:\Users\" + userName + @"\Documents\Vokabelprogramm\Listen\");
         //instanziert ein Objekt der Klasse DirectoryInfo mit obigem Parameter für den Konstruktor der Klasse DirectInfo
-        private DirectoryInfo Directory_Statistic = new DirectoryInfo(@"C:\Users\" + userName + "\\Documents\\Vokabelprogramm\\Stat");
+        private DirectoryInfo Directory_Statistic = new DirectoryInfo(@"C:\Users\" + userName + @"\Documents\Vokabelprogramm\Stat\");
         //initialisert die Datei, in welche die nicht gewussten Vokabeln &Co. auf Bedarf gesichert werden
         private string filename = "VocList.wVoc";
         //initialisert die Datei, in welche die Statistikdaten auf Bedarf gesichert werden
@@ -78,7 +78,7 @@ namespace Vokabelprogramm
 
 
         //Konstruktor der Klasse
-        public Form1()
+        public Main()
         {
             InitializeComponent();
             this.Deactivation(3);
@@ -100,7 +100,7 @@ namespace Vokabelprogramm
         //ABOUT: About_Author-Ereignis des Menus
         private void authorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form2 fm = new Form2();
+            Author fm = new Author();
             fm.Show();
         }
 

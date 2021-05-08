@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Vokabelprogramm
 {
-    public partial class Form2 : Form
+    public partial class Author : Form
     {
         [DllImport("user32.dll")]
         public static extern int ShowWindow(int Wnd, int Flags);
@@ -15,7 +15,7 @@ namespace Vokabelprogramm
         public static extern int FindWindow(string strCName, string strWndName);
         private System.ComponentModel.IContainer components;
 
-        public Form2()
+        public Author()
         {
             InitializeComponent();
 
@@ -24,7 +24,7 @@ namespace Vokabelprogramm
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form2));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Author));
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 

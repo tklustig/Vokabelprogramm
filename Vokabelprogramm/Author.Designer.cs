@@ -1,6 +1,6 @@
 ﻿namespace Vokabelprogramm
 {
-    partial class Form2
+    partial class Author
     {
         /// <summary>
         /// Required designer variable.
