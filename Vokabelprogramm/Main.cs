@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.IO;
 using System.Media;
-using System.ComponentModel;
 using System.Net;
 using System.Diagnostics;
 using System.Speech.Synthesis;
@@ -78,35 +77,27 @@ namespace Vokabelprogramm
 
 
         //Konstruktor der Klasse
-        public Main()
-        {
+        public Main() {
             InitializeComponent();
             this.Deactivation(3);
-            Player.SoundLocation = "http://tklustig.ddns.net:1025/tetris.wav";
-            Player.LoadAsync();
-            this.Player.LoadCompleted += new AsyncCompletedEventHandler(Player_LoadCompleted);
-            if (!Directory.Exists(Main_Directory.ToString()))
-            {
+            if (!Directory.Exists(Main_Directory.ToString())) {
                 Directory.CreateDirectory(Main_Directory.ToString());
             }
         }
 
         //QUIT: About_Quit-Ereignis des Menus
-        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void quitToolStripMenuItem_Click(object sender, EventArgs e) {
             Application.Exit();
         }
 
         //ABOUT: About_Author-Ereignis des Menus
-        private void authorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void authorToolStripMenuItem_Click(object sender, EventArgs e) {
             Author fm = new Author();
             fm.Show();
         }
 
         //HELP: About_Help-Ereignis des Menus
-        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e) {
             this.Deactivation(0);
             textBox1.Text = " Über das Menu lassen sich folgende Optionen aufrufen:" + Environment.NewLine + Environment.NewLine +
                 "1.1: Vokabeln editieren: Lädt eine vorhandene Vokabelliste, um sie zu editieren. Dazu klicken Sie in die Zelle, um den Wert zu verändern. Eine Übernahme der Änderung erfolgt durch den Submitbutton." + Environment.NewLine +
@@ -122,10 +113,8 @@ namespace Vokabelprogramm
                 "2.3: Ton: Zu Beginn ist der Sound deaktiviert. Dieser Menupunkt aktiviert und deaktiviert, je nach Status, das Abspielen. Die Sounddatei befindet sich online auf meinem Pi; sie werden informiert, sobald die Sounddatei zur Verfügung steht. Wenn Sie offline sind, kann der Sound nicht abgespielt werden" + Environment.NewLine +
                 "2.4: Infoboxen: Zu Beginn werden Infoboxen standardmäßig aktiviert. Wenn Sie mit der Applikation vertraut sind, empfiehlt es sich, die Infoboxen zu deaktivieren.";
             ;
-            if (ShowInfo)
-            {
-                using (SpeechSynthesizer speechSynthesizer = new SpeechSynthesizer())
-                {
+            if (ShowInfo) {
+                using (SpeechSynthesizer speechSynthesizer = new SpeechSynthesizer()) {
                     speechSynthesizer.SelectVoiceByHints(VoiceGender.Female, VoiceAge.Adult);
                     speechSynthesizer.Rate = -1;
                     speechSynthesizer.Speak("Welcome to help option of this C# application");
@@ -134,45 +123,46 @@ namespace Vokabelprogramm
         }
 
         //INFO: Aktiviert bzw. Deaktiviert die Anzeige der Messageboxen
-        private void infoboxenDeaktivierenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (infoboxenDeaktivierenToolStripMenuItem.Text == "Infoboxen deaktivieren")
-            {
+        private void infoboxenDeaktivierenToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (infoboxenDeaktivierenToolStripMenuItem.Text == "Infoboxen deaktivieren") {
                 infoboxenDeaktivierenToolStripMenuItem.Text = "Infoboxen aktivieren";
                 ShowInfo = false;
-            }
-            else
-            {
+            } else {
                 infoboxenDeaktivierenToolStripMenuItem.Text = "Infoboxen deaktivieren";
                 ShowInfo = true;
             }
         }
 
         //TON: About_TonAktivieren-Ereignis des Menus
-        private void tonAbspielenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (tonAbspielenToolStripMenuItem.Text == "Ton aktivieren")
-                {
-                    Player.Play();
+        private void tonAbspielenToolStripMenuItem_Click(object sender, EventArgs e) {
+
+            try {
+                if (tonAbspielenToolStripMenuItem.Text == "Ton aktivieren") {
+                    Player.SoundLocation = "https://tklustig.de/tetris.wav";
+                    Player.LoadAsync();
+                    Uri url = new Uri("https://tklustig.de/");
+                    if (Player.IsLoadCompleted && this.CheckHost(url))
+                        MessageBox.Show("Sounddatei wurde erfolgreich aus dem Webspace des Raspbbery Pi geladen!");
+                    else {
+                        //MessageBox.Show("Sounddatei konnte nicht geladen werden! Einzelheiten unter About/Help(2.2)", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+                        using (SoundPlayer player = new SoundPlayer(Properties.Resources.tetris)) {
+                            player.LoadAsync();
+                            player.Play();
+                        }
+                    }
+                    //Player.Play();
                     tonAbspielenToolStripMenuItem.Text = "Ton deaktivieren";
-                }
-                else
-                {
+                } else {
                     tonAbspielenToolStripMenuItem.Text = "Ton aktivieren";
                     Player.Stop();
                 }
-            }
-            catch (Exception er)
-            {
+            } catch (Exception er) {
                 MessageBox.Show("Da Sie offline sind, kann der Sound nicht geladen werden..." + Environment.NewLine + Environment.NewLine + er.ToString(), "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
             }
         }
 
         //EINGEBEN: Datei_VokabelnEingeben-Ereignis des Menus
-        private void vokabelnEingebenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void vokabelnEingebenToolStripMenuItem_Click(object sender, EventArgs e) {
             this.Deactivation(3);
             label1.Visible = true;
             trackBar1.Visible = true;
@@ -181,8 +171,7 @@ namespace Vokabelprogramm
         }
 
         //LOAD: Datei_VokabelnLaden-Ereignis des Menus
-        private void vokabelnLadenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void vokabelnLadenToolStripMenuItem_Click(object sender, EventArgs e) {
             //sorgt dafür, dass das Clickereignis ausgelöst wird. Ist standardmäßig auf false gesetzt, wurde jedoch mitunter an anderer Stelle auf true gesetzt
             CheckClickStatus = false;
             if (ShowInfo)
@@ -190,25 +179,19 @@ namespace Vokabelprogramm
             OpenFileDialog OpenFileDialog = new OpenFileDialog();
             OpenFileDialog.InitialDirectory = Main_Directory.ToString();
             OpenFileDialog.Filter = "voca files (*.voca)|*.voca";
-            if (OpenFileDialog.ShowDialog() != DialogResult.Cancel)
-            {
-                if ((OpenFileDialog.FileName) != null)
-                {
+            if (OpenFileDialog.ShowDialog() != DialogResult.Cancel) {
+                if ((OpenFileDialog.FileName) != null) {
                     this.Deactivation(3);
-                    if (!CheckGridEdit)
-                    {
+                    if (!CheckGridEdit) {
                         this.SetupDataGridView_Edit();
                         CheckGridEdit = true;
-                    }
-                    else
-                    {
+                    } else {
                         DataGridView_Edit.Rows.Clear();
                         DataGridView_Edit.Visible = true;
                     }
                     var zeilen = File.ReadAllLines(OpenFileDialog.FileName);
                     int haelfte = zeilen.Length / 2;
-                    for (int i = 0; i < haelfte; i++)
-                    {
+                    for (int i = 0; i < haelfte; i++) {
                         DataGridView_Edit.Rows.Add(i + 1, zeilen[i], zeilen[haelfte + i]);
                     }
                     RememberFilename_Edit = OpenFileDialog.FileName;
@@ -221,18 +204,15 @@ namespace Vokabelprogramm
         }
 
         //DELETE: Datei_VokabellisteLöschen-Ereignis des Menus
-        private void ListeLoeschenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void ListeLoeschenToolStripMenuItem_Click(object sender, EventArgs e) {
             this.Deactivation(3);
             if (ShowInfo)
                 MessageBox.Show("Wählen Sie die zu löschende Datei aus", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
             OpenFileDialog OpenFileDialog = new OpenFileDialog();
             OpenFileDialog.InitialDirectory = Main_Directory.ToString();
             OpenFileDialog.Filter = "voca files (*.voca)|*.voca";
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                if ((OpenFileDialog.FileName) != null)
-                {
+            if (OpenFileDialog.ShowDialog() == DialogResult.OK) {
+                if ((OpenFileDialog.FileName) != null) {
                     File.Delete(OpenFileDialog.FileName);
                     if (ShowInfo)
                         MessageBox.Show("Die Datei " + OpenFileDialog.FileName + " wurde soeben gelöscht!");
@@ -241,8 +221,7 @@ namespace Vokabelprogramm
         }
 
         //TEST: Datei_TestStarten-Ereignis des Menus
-        private void TestStartenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void TestStartenToolStripMenuItem_Click(object sender, EventArgs e) {
             timer1.Enabled = false;
             //sorgt dafür, dass das Clickereignis nicht ausgelöst wird
             CheckClickStatus = true;
@@ -253,36 +232,26 @@ namespace Vokabelprogramm
             OpenFileDialog.InitialDirectory = Main_Directory.ToString();
             OpenFileDialog.Filter = "voca files (*.voca)|*.voca";
             int anzahlVoc = 0;
-            if (!CheckAusgabe)
-            {
+            if (!CheckAusgabe) {
                 ausgabe = "Es wurde noch keine Vokabelliste geladen. Soll eine Liste geladen werden?";
-            }
-            else
+            } else
                 ausgabe = "Es wurde bereits eine Vokabelliste geladen. Soll eine neue Liste geladen werden?";
 
-            if (!CheckAusgabe)
-            {
-                if (MessageBox.Show(ausgabe, "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
-                    if (OpenFileDialog.ShowDialog() != DialogResult.Cancel)
-                    {
-                        if ((OpenFileDialog.FileName) != null)
-                        {
+            if (!CheckAusgabe) {
+                if (MessageBox.Show(ausgabe, "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes) {
+                    if (OpenFileDialog.ShowDialog() != DialogResult.Cancel) {
+                        if ((OpenFileDialog.FileName) != null) {
                             this.Deactivation(3);
-                            if (!CheckGridTest)
-                            {
+                            if (!CheckGridTest) {
                                 this.SetupDataGridView_Test();
                                 CheckGridTest = true;
                                 DataGridView_Test.Visible = false;
-                            }
-                            else
-                            {
+                            } else {
                                 DataGridView_Test.Rows.Clear();
                             }
                             var zeilen = File.ReadAllLines(OpenFileDialog.FileName);
                             int haelfte = zeilen.Length / 2;
-                            for (int i = 0; i < haelfte; i++)
-                            {
+                            for (int i = 0; i < haelfte; i++) {
                                 DataGridView_Test.Rows.Add(i + 1, zeilen[i], zeilen[haelfte + i]);
                             }
                             RememberFilename_Test = OpenFileDialog.FileName;
@@ -291,41 +260,31 @@ namespace Vokabelprogramm
                                 MessageBox.Show("Die Testliste wurde geladen. Sie enthält " + anzahlVoc + " Vokabeln.");
                             DataGridView_Test.Visible = true;
                         }
-                    }
-                    else
-                    {
+                    } else {
                         if (ShowInfo)
                             MessageBox.Show("Solange keine Liste geladen wurde, kann der Test nicht gestartet werden!", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                         CheckAusgabe = false;
                         return;
                     }
-                }
-                else
-                {
+                } else {
                     if (ShowInfo)
                         MessageBox.Show("Solange keine Liste geladen wurde, kann der Test nicht gestartet werden!", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                     CheckAusgabe = false;
                     return;
                 }
                 CheckAusgabe = true;
-            }
-            else
-            {
-                if (MessageBox.Show(ausgabe, "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes && OpenFileDialog.ShowDialog() != DialogResult.Cancel)
-                {
-                    if (OpenFileDialog.FileName != null)
-                    {
+            } else {
+                if (MessageBox.Show(ausgabe, "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes && OpenFileDialog.ShowDialog() != DialogResult.Cancel) {
+                    if (OpenFileDialog.FileName != null) {
                         this.Deactivation(3);
                         if (!CheckGridTest)
                             this.SetupDataGridView_Test();
-                        else
-                        {
+                        else {
                             DataGridView_Test.Rows.Clear();
                         }
                         var zeilen = File.ReadAllLines(OpenFileDialog.FileName);
                         int haelfte = zeilen.Length / 2;
-                        for (int i = 0; i < haelfte; i++)
-                        {
+                        for (int i = 0; i < haelfte; i++) {
                             DataGridView_Test.Rows.Add(i + 1, zeilen[i], zeilen[haelfte + i]);
                         }
                         RememberFilename_Test = OpenFileDialog.FileName;
@@ -334,15 +293,12 @@ namespace Vokabelprogramm
                     if (ShowInfo)
                         MessageBox.Show("Die neue Testliste wurde geladen. Sie enthält " + anzahlVoc + " Vokabeln.");
                     DataGridView_Test.Visible = true;
-                }
-                else
-                {
+                } else {
                     this.Deactivation(3);
                     DataGridView_Test.Rows.Clear();
                     var zeilen = File.ReadAllLines(RememberFilename_Test);
                     int haelfte = zeilen.Length / 2;
-                    for (int i = 0; i < haelfte; i++)
-                    {
+                    for (int i = 0; i < haelfte; i++) {
                         DataGridView_Test.Rows.Add(i + 1, zeilen[i], zeilen[haelfte + i]);
                     }
                     anzahlVoc = DataGridView_Test.Rows.Count;
@@ -373,12 +329,10 @@ namespace Vokabelprogramm
             InhaltDeutsch.Clear();
             InhaltForeign.Clear();
             var GridInhalt = File.ReadAllLines(RememberFilename_Test);
-            for (int i = 0; i < anzahlVoc; i++)
-            {
+            for (int i = 0; i < anzahlVoc; i++) {
                 InhaltDeutsch.Add(GridInhalt[i]);
             }
-            for (int i = anzahlVoc; i < anzahlVoc * 2; i++)
-            {
+            for (int i = anzahlVoc; i < anzahlVoc * 2; i++) {
                 InhaltForeign.Add(GridInhalt[i]);
             }
             anzahl = anzahlVoc;
@@ -388,23 +342,18 @@ namespace Vokabelprogramm
         }
 
         //zeigt den Wert der Trackbar in einem label an
-        private void trackBar1_Scroll(object sender, EventArgs e)
-        {
+        private void trackBar1_Scroll(object sender, EventArgs e) {
             label1.Text = trackBar1.Value.ToString();
         }
 
         //regelt den Ablauf, nachdem auf Submitbutton1 gedrückt wurde: Erstellt die Textboxen. Dieser Button wurde im Designer generiert
-        private void button1_Click(object sender, EventArgs e)
-        {
+        private void button1_Click(object sender, EventArgs e) {
             //aufgrund einer Eigenwilligkeit von C# muss von hinten nach vorne iteriert werden: Entfernt zunächst alle Textboxen....
-            for (int i = this.Controls.Count - 1; i >= 0; i--)
-            {
+            for (int i = this.Controls.Count - 1; i >= 0; i--) {
                 Control t = this.Controls[i];
-                if (t.GetType() == typeof(TextBox))
-                {
+                if (t.GetType() == typeof(TextBox)) {
                     TextBox tb = (TextBox)t;
-                    if (tb.Name.StartsWith("MYTEXTBOX"))
-                    {
+                    if (tb.Name.StartsWith("MYTEXTBOX")) {
                         this.Controls.Remove(tb);
                     }
                 }
@@ -413,27 +362,22 @@ namespace Vokabelprogramm
             button2.Visible = true;
             textBox3.Visible = true;
             //.... um sie sodann neu zu generieren
-            for (int i = 1; i <= trackBar1.Value; i++)
-            {
+            for (int i = 1; i <= trackBar1.Value; i++) {
                 TextBox textbox = new TextBox();
                 textbox.Name = String.Format("MYTEXTBOX_GERMAN{0}", i);
                 textbox.Location = new Point(400, 150 + 30 * i);
                 this.Controls.Add(textbox);
             }
-            for (int i = 1; i <= trackBar1.Value; i++)
-            {
+            for (int i = 1; i <= trackBar1.Value; i++) {
                 TextBox textbox = new TextBox();
                 textbox.Name = String.Format("MYTEXTBOX_FOREIGN{0}", i);
                 textbox.Location = new Point(600, 150 + 30 * i);
                 this.Controls.Add(textbox);
             }
-            foreach (Control t in this.Controls)
-            {
-                if (t.GetType() == typeof(TextBox))
-                {
+            foreach (Control t in this.Controls) {
+                if (t.GetType() == typeof(TextBox)) {
                     TextBox tb = (TextBox)t;
-                    if (tb.Name == "MYTEXTBOX_GERMAN1")
-                    {
+                    if (tb.Name == "MYTEXTBOX_GERMAN1") {
                         tb.Focus();
                     }
                 }
@@ -442,39 +386,28 @@ namespace Vokabelprogramm
 
         /*regelt den Ablauf, nachdem auf Submitbutton2 gedrückt wurde: Validiert die Eingaben und verfrachtet dieselbigen in die generischen Datentypen. Dieser Button
         wurde im Designer generiert*/
-        private void button2_Click(object sender, EventArgs e)
-        {
+        private void button2_Click(object sender, EventArgs e) {
             InhaltDeutsch.Clear();
             InhaltForeign.Clear();
             //Auf sämtliche dynamische Textboxen zugreifen
-            foreach (Control t in this.Controls)
-            {
-                if (t.GetType() == typeof(TextBox))
-                {
+            foreach (Control t in this.Controls) {
+                if (t.GetType() == typeof(TextBox)) {
                     TextBox tb = (TextBox)t;
-                    if (tb.Name.StartsWith("MYTEXTBOX_GERMAN"))
-                    {
+                    if (tb.Name.StartsWith("MYTEXTBOX_GERMAN")) {
                         InhaltDeutsch.Add(tb.Text);
-                    }
-                    else
-                    {
-                        if (tb.Name.StartsWith("MYTEXTBOX_FOREIGN"))
-                        {
+                    } else {
+                        if (tb.Name.StartsWith("MYTEXTBOX_FOREIGN")) {
                             InhaltForeign.Add(tb.Text);
                         }
                     }
-                    if (tb.Name.StartsWith("MYTEXTBOX") && tb.Text.Length == 0)
-                    {
+                    if (tb.Name.StartsWith("MYTEXTBOX") && tb.Text.Length == 0) {
                         tb.BackColor = Color.Red;
                         tb.Select();
-                        if (ShowInfo)
-                        {
+                        if (ShowInfo) {
                             MessageBox.Show("Das rote Feld darf nicht leer sein", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                         }
                         return;
-                    }
-                    else
-                    {
+                    } else {
                         tb.BackColor = Color.White;
                     }
                 }
@@ -484,62 +417,48 @@ namespace Vokabelprogramm
         }
 
         //blendet,abhängig vom übergebenen Parameter, verschiedene Steuerelemente aus 
-        private void Deactivation(int param)
-        {
-            foreach (Control t in this.Controls)
-            {
-                if (t.GetType() == typeof(TextBox))
-                {
+        private void Deactivation(int param) {
+            foreach (Control t in this.Controls) {
+                if (t.GetType() == typeof(TextBox)) {
                     TextBox tb = (TextBox)t;
                     tb.Visible = false;
                     tb.Enabled = false;
                 }
-                if (t.GetType() == typeof(DataGridView))
-                {
+                if (t.GetType() == typeof(DataGridView)) {
                     DataGridView dg = (DataGridView)t;
                     dg.Visible = false;
                 }
-                if (t.GetType() == typeof(Label))
-                {
+                if (t.GetType() == typeof(Label)) {
                     Label lb = (Label)t;
                     lb.Visible = false;
                 }
-                if (t.GetType() == typeof(Button))
-                {
+                if (t.GetType() == typeof(Button)) {
                     Button bt = (Button)t;
                     bt.Visible = false;
                 }
-                if (t.GetType() == typeof(TrackBar))
-                {
+                if (t.GetType() == typeof(TrackBar)) {
                     TrackBar ttb = (TrackBar)t;
                     ttb.Visible = false;
                 }
-                if (t.GetType() == typeof(ProgressBar))
-                {
+                if (t.GetType() == typeof(ProgressBar)) {
                     ProgressBar pgb = (ProgressBar)t;
                     pgb.Visible = false;
                 }
-                if (t.GetType() == typeof(RadioButton))
-                {
+                if (t.GetType() == typeof(RadioButton)) {
                     RadioButton rbt = (RadioButton)t;
                     rbt.Visible = false;
                 }
-                if (t.GetType() == typeof(CheckBox))
-                {
+                if (t.GetType() == typeof(CheckBox)) {
                     CheckBox cb = (CheckBox)t;
                     cb.Visible = false;
                 }
-                if (t.GetType() == typeof(ListBox))
-                {
+                if (t.GetType() == typeof(ListBox)) {
                     ListBox lb = (ListBox)t;
                     lb.Visible = false;
                 }
-                if (param == 0)
-                {
+                if (param == 0) {
                     textBox1.Visible = true;
-                }
-                else if (param == 1)
-                {
+                } else if (param == 1) {
                     label3.Visible = true;
                     label4.Visible = true;
                 }
@@ -548,30 +467,22 @@ namespace Vokabelprogramm
         }
 
         //speichert die Usereingaben bzw. den Inhalt der generischen Datentypen in einer Datei
-        private bool SaveData()
-        {
-            try
-            {
+        private bool SaveData() {
+            try {
                 bool vorhanden = true;
                 string filename = "";
-                if (!Main_Directory.Exists)
-                {
-                    if (MessageBox.Show("Um eine neue Liste anzulegen, muss das Verzeichnis " + Main_Directory + " neu angelegt werden. Wollen Sie das Verzeichnis anlegen?", "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    {
+                if (!Main_Directory.Exists) {
+                    if (MessageBox.Show("Um eine neue Liste anzulegen, muss das Verzeichnis " + Main_Directory + " neu angelegt werden. Wollen Sie das Verzeichnis anlegen?", "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes) {
                         DirectoryInfo info = Directory.CreateDirectory(Main_Directory.ToString());
-                    }
-                    else
-                    {
+                    } else {
                         MessageBox.Show("Liste kan nicht angelegt werden!", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                         return false;
                     }
                 }
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "voca files (*.voca)|*.voca";
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    if ((saveFileDialog.FileName) != null)
-                    {
+                if (saveFileDialog.ShowDialog() == DialogResult.OK) {
+                    if ((saveFileDialog.FileName) != null) {
                         filename = saveFileDialog.FileName;
                         if (File.Exists(filename))
                             vorhanden = true;
@@ -588,16 +499,13 @@ namespace Vokabelprogramm
                         MessageBox.Show(filename + " wurde soeben erstellt");
                 }
                 return true;
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
                 return false;
             }
         }
 
         //Initialisiert die GridView für das Editieren
-        private void SetupDataGridView_Edit()
-        {
+        private void SetupDataGridView_Edit() {
             this.Controls.Add(DataGridView_Edit);
             DataGridView_Edit.ColumnCount = 3;
             DataGridView_Edit.Name = "DataGridView_Edit";
@@ -613,8 +521,7 @@ namespace Vokabelprogramm
         }
 
         //Initialisiert die GridView für den Test
-        private void SetupDataGridView_Test()
-        {
+        private void SetupDataGridView_Test() {
             this.Controls.Add(DataGridView_Test);
             DataGridView_Test.ColumnCount = 3;
             DataGridView_Test.Name = "DataGridView_Test";
@@ -629,8 +536,7 @@ namespace Vokabelprogramm
         }
 
         //Initialisiert die GridView für die Statistik
-        private void SetupDataGridView_Statistic()
-        {
+        private void SetupDataGridView_Statistic() {
             this.Controls.Add(DataGridView_Statistic);
             DataGridView_Statistic.ColumnCount = 4;
             DataGridView_Statistic.Name = "DataGridView_Statistic";
@@ -646,8 +552,7 @@ namespace Vokabelprogramm
         }
 
         //Initialisiert die GridView für die gesicherte Statistikliste
-        private void SetupDataGridView_StatisticListe()
-        {
+        private void SetupDataGridView_StatisticListe() {
             this.Controls.Add(DataGridView_StatisticList);
             DataGridView_StatisticList.ColumnCount = 7;
             DataGridView_StatisticList.Name = "DataGridView_StatisticList";
@@ -666,8 +571,7 @@ namespace Vokabelprogramm
         }
 
         //Initialisiert die GridView für die gesicherte Errorliste
-        private void SetupDataGridView_ErrorListe()
-        {
+        private void SetupDataGridView_ErrorListe() {
             this.Controls.Add(DataGridView_ErrorList);
             DataGridView_ErrorList.ColumnCount = 4;
             DataGridView_ErrorList.Name = "DataGridView_ErrorList";
@@ -684,23 +588,18 @@ namespace Vokabelprogramm
         }
 
         //regelt den Ablauf, nachdem auf eine Zelle der GridView geklickt wurde
-        private void DataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
+        private void DataGridView_CellClick(object sender, DataGridViewCellEventArgs e) {
             Button SubmitButton;
             /*führt nachfolgenden Code nur dann aus, wenn die boolsche Variable false ist. Das ist sie standarmäßig. Mitunter wurde sie an anderer Stelle jedoch
              auf true gesetzt*/
-            if (!CheckClickStatus)
-            {
-                if (e.ColumnIndex == 0)
-                {
-                    if (ShowInfo)
-                    {
+            if (!CheckClickStatus) {
+                if (e.ColumnIndex == 0) {
+                    if (ShowInfo) {
                         MessageBox.Show("Diesen Wert können Sie nicht verändern");
                     }
                     return;
                 }
-                if (e.ColumnIndex != -1 && e.ColumnIndex != 0)
-                {
+                if (e.ColumnIndex != -1 && e.ColumnIndex != 0) {
                     SubmitButton = new Button();
                     SubmitButton.Size = new Size(50, 23);
                     SubmitButton.Location = new Point(100, 425);
@@ -714,18 +613,14 @@ namespace Vokabelprogramm
         }
 
         //regelt den Ablauf, nachdem auf den obigen SubmitButton gedrückt wurde: Die Zellen werden gesichert. Dieser Button wurde durch obige Methode erstellt
-        private void SubmitButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
+        private void SubmitButton_Click(object sender, EventArgs e) {
+            try {
                 string lines = "";
                 int VocAmount = (DataGridView_Edit.Columns.Count - 1) * DataGridView_Edit.Rows.Count;
                 //bei eins beginnen, damit die Zahlen nicht mitgespeichert werden
-                for (int col = 1; col < DataGridView_Edit.Columns.Count; col++)
-                {
+                for (int col = 1; col < DataGridView_Edit.Columns.Count; col++) {
                     //alle Reihen zählen, da zusätzliche nicht hinzugefügt werden können, es also auch keine leere Reihen in der GridView gibt
-                    for (int row = 0; row < DataGridView_Edit.Rows.Count; row++)
-                    {
+                    for (int row = 0; row < DataGridView_Edit.Rows.Count; row++) {
                         //sofern letzte Zeile erreicht, kein Umbruch mehr durchführen, sonst kommt es zu Array-Index-Fehler in der Auswertung
                         if (col * (row + 1) == VocAmount)
                             lines += DataGridView_Edit.Rows[row].Cells[col].Value.ToString();
@@ -738,9 +633,7 @@ namespace Vokabelprogramm
                 objWriter.Close();
                 if (ShowInfo)
                     MessageBox.Show("Die editierte Vokabelliste wurde erfolgreich in der Datei " + RememberFilename_Edit + " gesichert");
-            }
-            catch (Exception er)
-            {
+            } catch (Exception er) {
                 if (ShowInfo)
                     MessageBox.Show("Es darf keinerlei leere Zellen geben!" + Environment.NewLine + Environment.NewLine + er.ToString(), "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                 return;
@@ -748,14 +641,12 @@ namespace Vokabelprogramm
         }
 
         //regelt den Ablauf, nachdem auf TestButton gedrückt wurde:Der Test wird gestartet. Dieser Button wurde dynamisch erstellt
-        private void TestButton_Click(object sender, EventArgs e)
-        {
+        private void TestButton_Click(object sender, EventArgs e) {
             /*deaktivert den Timer nach jedem Aufruf und setzt ihn zurück*/
             timer1.Enabled = false;
             Time.Reset();
             CountMyRound++;
-            if (!radioButton1.Checked && !radioButton2.Checked)
-            {
+            if (!radioButton1.Checked && !radioButton2.Checked) {
                 if (ShowInfo)
                     MessageBox.Show("Eine der beiden Abfrageoptionen muss gewählt werden. Aktivieren Sie folglich einer der beiden RadioButtons, damit der Test beginnen kan...", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                 return;
@@ -779,31 +670,26 @@ namespace Vokabelprogramm
             else if (anzahl <= 15 && anzahl > 10) TimeOver = 90;
             else if (anzahl <= 20 && anzahl > 15) TimeOver = 120;
 
-            if (checkBox1.Checked)
-            {
+            if (checkBox1.Checked) {
                 if (ShowInfo)
                     MessageBox.Show("Ab jetzt haben Sie " + TimeOver + " Sekunden Zeit. Danach erfolgt posthum die Auswertung. Wenn Sie vorher fertig sind, können Sie den gelben Button pushen.");
                 timer1.Enabled = true;
                 Time.Start();
-            }
-            else
-            {
+            } else {
                 label5.Text = "Round:" + CountMyRound + "  0:00:000";
                 if (ShowInfo)
                     MessageBox.Show(" Die Zeit zur Lösung des Tests spielt keine Rolle. Sie verbleibt bei 0:00:000");
             }
             /*Mischt die Vokabeln durch den Zufallsgenerator der Klasse Random*/
             Random rand = new Random(DateTime.Now.Millisecond);
-            if (radioButton1.Checked)
-            {
+            if (radioButton1.Checked) {
                 InhaltDeutsch.Sort(delegate (string s1, string s2)
                 {
                     /* Sortierung wird durch Zufall bestimmt*/
                     return rand.Next(-5, 3);
                 });
                 /*Stellt die gemischten Vokabeln in den Textboxen dar*/
-                for (int i = 0; i < InhaltDeutsch.Count; i++)
-                {
+                for (int i = 0; i < InhaltDeutsch.Count; i++) {
                     TextBox textbox = new TextBox();
                     textbox.Name = String.Format("MYTEXTBOX_GERMAN{0}", i);
                     textbox.Text = InhaltDeutsch[i];
@@ -811,22 +697,18 @@ namespace Vokabelprogramm
                     textbox.Enabled = false;
                     this.Controls.Add(textbox);
                 }
-                for (int i = 0; i < InhaltForeign.Count; i++)
-                {
+                for (int i = 0; i < InhaltForeign.Count; i++) {
                     TextBox textbox = new TextBox();
                     textbox.Name = String.Format("MYTEXTBOX_FOREIGN{0}", i);
                     textbox.Location = new Point(600, 150 + 30 * i);
                     this.Controls.Add(textbox);
                 }
-            }
-            else if (radioButton2.Checked)
-            {
+            } else if (radioButton2.Checked) {
                 InhaltForeign.Sort(delegate (string s1, string s2)
                 {
                     return rand.Next(-5, 3);
                 });
-                for (int i = 0; i < InhaltForeign.Count; i++)
-                {
+                for (int i = 0; i < InhaltForeign.Count; i++) {
                     TextBox textbox = new TextBox();
                     textbox.Name = String.Format("MYTEXTBOX_FOREIGN{0}", i);
                     textbox.Text = InhaltForeign[i];
@@ -834,8 +716,7 @@ namespace Vokabelprogramm
                     textbox.Enabled = false;
                     this.Controls.Add(textbox);
                 }
-                for (int i = 0; i < InhaltDeutsch.Count; i++)
-                {
+                for (int i = 0; i < InhaltDeutsch.Count; i++) {
                     TextBox textbox = new TextBox();
                     textbox.Name = String.Format("MYTEXTBOX_DEUTSCH{0}", i);
                     textbox.Location = new Point(600, 150 + 30 * i);
@@ -846,34 +727,24 @@ namespace Vokabelprogramm
         }
 
         //prüft, ob die Sounddatei asynchron geladen wurde
-        private void Player_LoadCompleted(object sender, AsyncCompletedEventArgs e)
-        {
-            Uri url = new Uri("http://tklustig.ddns.net:1025");
-            if (Player.IsLoadCompleted && this.CheckHost(url) && ShowInfo)
-                MessageBox.Show("Sounddatei wurde erfolgreich aus dem Webspace des Raspbbery Pi geladen!");
-            else if (!Player.IsLoadCompleted && this.CheckHost(url) && ShowInfo)
-                MessageBox.Show("Sounddatei konnte nicht geladen werden! Einzelheiten unter About/Help(2.2)", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-        }
+
 
         //prüft, ob der Rechner online ist
-        private bool CheckHost(Uri url)
-        {
+        private bool CheckHost(Uri url) {
             WebRequest request = WebRequest.Create(url);
             request.Timeout = 15000;
-            try
-            {
+            try {
                 var response = request.GetResponse();
-                return response.ResponseUri.Host.Contains("ddns");
-            }
-            catch(Exception)
-            {
+                bool hasConnected = response.ResponseUri.Host.Contains("de");
+                return hasConnected;
+            } catch (Exception error) {
+                MessageBox.Show(error.Message);
                 return false;
             }
         }
 
         //setzt die Stoppuhr in Gang
-        private void timer1_Tick(object sender, EventArgs e)
-        {
+        private void timer1_Tick(object sender, EventArgs e) {
             TimeSpan ElapsedTime = Time.Elapsed;
             string ElapsedTimeString = "";
             int TimeOver = 0;
@@ -885,8 +756,7 @@ namespace Vokabelprogramm
             ElapsedTime.Minutes, ElapsedTime.Seconds, ElapsedTime.Milliseconds);
             label5.Text = ElapsedTimeString;
             TimeForTest = ElapsedTime.TotalSeconds;
-            if (TimeForTest > TimeOver)
-            {
+            if (TimeForTest > TimeOver) {
                 timer1.Enabled = false;
                 Time.Stop();
                 button3.Visible = false;
@@ -897,18 +767,15 @@ namespace Vokabelprogramm
         }
 
         //ruft die Methode TestAuswerten() aus, nachdem auf den entsprechenden 'Auswerten'-Button gedrückt wurde
-        private void button3_Click(object sender, EventArgs e)
-        {
+        private void button3_Click(object sender, EventArgs e) {
             timer1.Enabled = true;
             Time.Stop();
             this.TestAuswerten();
         }
 
         //wertet den Test aus. Enthält den Algorithmus zur Bestimmung falscher Vokabeleingaben
-        private void TestAuswerten()
-        {
-            try
-            {
+        private void TestAuswerten() {
+            try {
                 int WrongValues = 0;
                 /*initialisert eine lokale Liste, um die fehlerhaft eingegebenen Vokabeln zu eruieren*/
                 List<string> InhaltVergleich = new List<string>();
@@ -924,21 +791,17 @@ namespace Vokabelprogramm
                 string[] OriginArrayFo = new string[anzahl];
                 /*Rubrik: Vokabel <--> geladene Datei :*/
                 var zeilen = File.ReadAllLines(RememberFilename_Test);
-                for (int i = 0; i < anzahl; i++)
-                {
+                for (int i = 0; i < anzahl; i++) {
                     OriginArrayDt[i] = zeilen[i];
                 }
-                for (int i = 0; i < zeilen.Length; i++)
-                {
+                for (int i = 0; i < zeilen.Length; i++) {
                     if (i > anzahl - 1)
                         OriginArrayFo[i - anzahl] = zeilen[i];
                 }
                 /*Rubrik: Vokabel <--> Usereingabe :
                  Sofern deutsche Begriffe gefragt sind*/
-                if (radioButton1.Checked)
-                {
-                    for (int i = 0; i < anzahl; i++)
-                    {
+                if (radioButton1.Checked) {
+                    for (int i = 0; i < anzahl; i++) {
                         string VocDt = String.Format("MYTEXTBOX_GERMAN{0}", i);
                         string VocFo = String.Format("MYTEXTBOX_FOREIGN{0}", i);
                         var txtDt = (TextBox)this.Controls[VocDt];
@@ -949,10 +812,8 @@ namespace Vokabelprogramm
                     }
                 }
                 /*Sofern fremdsprachige Begriffe gefragt sind*/
-                else if (radioButton2.Checked)
-                {
-                    for (int i = 0; i < anzahl; i++)
-                    {
+                else if (radioButton2.Checked) {
+                    for (int i = 0; i < anzahl; i++) {
                         string VocFo = String.Format("MYTEXTBOX_FOREIGN{0}", i);
                         string VocDt = String.Format("MYTEXTBOX_DEUTSCH{0}", i);
                         var txtFo = (TextBox)this.Controls[VocFo];
@@ -969,26 +830,20 @@ namespace Vokabelprogramm
                 2.: TextBoxArrayDt enthält die dazu korrespondienden Vokabeln in deutsch
                 3.: OriginArrayFo enthält die korrekten Fremdvokabeln*/
 
-                if (radioButton1.Checked)
-                {
+                if (radioButton1.Checked) {
                     /*Dieser Alogorithums erfüllt obige Anforderungen*/
-                    foreach (String s1 in TextBoxArrayDt)
-                    {
+                    foreach (String s1 in TextBoxArrayDt) {
                         int zaehler = 0;
-                        foreach (String s2 in OriginArrayDt)
-                        {
+                        foreach (String s2 in OriginArrayDt) {
                             zaehler++;
-                            if (s1.Equals(s2) == true)
-                            {
+                            if (s1.Equals(s2) == true) {
                                 InhaltVergleich.Add(OriginArrayFo[zaehler - 1]);
                             }
                         }
                     }
                     /*verfrachte die jeweiligen Values in eine Liste zwecks späterer Auswertung*/
-                    for (int i = 0; i < anzahl; i++)
-                    {
-                        if (TextBoxArrayFo[i] != InhaltVergleich[i])
-                        {
+                    for (int i = 0; i < anzahl; i++) {
+                        if (TextBoxArrayFo[i] != InhaltVergleich[i]) {
                             WrongValues++;
                             /*abgefragte Vokabel*/
                             VocListWrong.Add(TextBoxArrayDt[i]);
@@ -999,33 +854,24 @@ namespace Vokabelprogramm
                         }
                     }
 
-                    for (int i = 0; i < anzahl; i++)
-                    {
-                        if (i == TextBoxArrayDt.Length - 1 && VocListWrong.Count > 0)
-                        {
+                    for (int i = 0; i < anzahl; i++) {
+                        if (i == TextBoxArrayDt.Length - 1 && VocListWrong.Count > 0) {
                             VocListWrong.Add("ENDE");
                         }
                     }
-                }
-                else if (radioButton2.Checked)
-                {
+                } else if (radioButton2.Checked) {
                     /*Genau dasselbe wie oben, allerdings mit anderen Values*/
-                    foreach (String s1 in TextBoxArrayFo)
-                    {
+                    foreach (String s1 in TextBoxArrayFo) {
                         int zaehler = 0;
-                        foreach (String s2 in OriginArrayFo)
-                        {
+                        foreach (String s2 in OriginArrayFo) {
                             zaehler++;
-                            if (s1.Equals(s2) == true)
-                            {
+                            if (s1.Equals(s2) == true) {
                                 InhaltVergleich.Add(OriginArrayDt[zaehler - 1]);
                             }
                         }
                     }
-                    for (int i = 0; i < anzahl; i++)
-                    {
-                        if (TextBoxArrayDt[i] != InhaltVergleich[i])
-                        {
+                    for (int i = 0; i < anzahl; i++) {
+                        if (TextBoxArrayDt[i] != InhaltVergleich[i]) {
                             WrongValues++;
                             /*abgefragte Vokabel*/
                             VocListWrong.Add(TextBoxArrayFo[i]);
@@ -1035,39 +881,30 @@ namespace Vokabelprogramm
                             VocListWrong.Add(InhaltVergleich[i]);
                         }
                     }
-                    for (int i = 0; i < anzahl; i++)
-                    {
-                        if (i == TextBoxArrayFo.Length - 1 && VocListWrong.Count > 0)
-                        {
+                    for (int i = 0; i < anzahl; i++) {
+                        if (i == TextBoxArrayFo.Length - 1 && VocListWrong.Count > 0) {
                             VocListWrong.Add("ENDE");
                         }
                     }
                 }
                 this.ShowStatistic(WrongValues, VocListWrong);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 MessageBox.Show("Während der Ausführung kam es zu folgendem schweren Fehler" + Environment.NewLine + e.ToString() + Environment.NewLine + "Die Applikation wird deshalb neu gestartet. Wir entschuldigen dieses Unanehmlichkeit!", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                 Application.Restart();
             }
         }
 
         //zeigt eine Zusammenfassung der Testdaten bzw. dessen Resultat an
-        private void ShowStatistic(int mistakes, List<string> Fehlerliste)
-        {
-            try
-            {
+        private void ShowStatistic(int mistakes, List<string> Fehlerliste) {
+            try {
                 string TermForTime;
                 string note = "";
                 DateTime localDate = DateTime.Now;
-                for (int i = this.Controls.Count - 1; i >= 0; i--)
-                {
+                for (int i = this.Controls.Count - 1; i >= 0; i--) {
                     Control t = this.Controls[i];
-                    if (t.GetType() == typeof(TextBox))
-                    {
+                    if (t.GetType() == typeof(TextBox)) {
                         TextBox tb = (TextBox)t;
-                        if (tb.Name.StartsWith("MYTEXTBOX"))
-                        {
+                        if (tb.Name.StartsWith("MYTEXTBOX")) {
                             this.Controls.Remove(tb);
                         }
                     }
@@ -1091,12 +928,9 @@ namespace Vokabelprogramm
                     MessageBox.Show("Es befinden sich mehrere Auswertungen in der Auflistung. Beachten sie die DateTimeangabe und scrollen Sie ggf. nach unten.");
                 listBox1.Items.Add(Environment.NewLine);
                 listBox1.Items.Add("Aktueller DateTime:" + localDate + " Uhr");
-                if (radioButton1.Checked)
-                {
+                if (radioButton1.Checked) {
                     listBox1.Items.Add("Gesucht wurde das Fremdwort.");
-                }
-                else if (radioButton2.Checked)
-                {
+                } else if (radioButton2.Checked) {
                     listBox1.Items.Add("Gesucht wurde ein deutscher Begriff.");
                 }
                 listBox1.Items.Add("Anzahl Vokabeln gesamt: " + anzahl + " Stück.");
@@ -1104,81 +938,61 @@ namespace Vokabelprogramm
                 listBox1.Items.Add("Folglich haben Sie " + korrekt + " Vokabeln richtig eingegeben.");
                 /*obgleich die Berechnung einen INT liefert, muss er als double initialisert werden, da er für folgende Arithmetik benötigt wird*/
                 listBox1.Items.Add("Dies entspricht der Note " + note);
-                if (TimeForTest > 0)
-                {
+                if (TimeForTest > 0) {
                     TimeForTest = Math.Round(TimeForTest, 2);
                     TermForTime = "Sie haben in etwa " + TimeForTest + " Sekunden für denTest benötigt.";
-                }
-                else
+                } else
                     TermForTime = "Die Zeit spielte in diesem Test keine Rolle.";
                 listBox1.Items.Add(TermForTime);
                 /*Hier werden die fehlerhaften Eingaben und die korrekten Vokabeln in die Grid verfrachtet und sodann angezeigt*/
-                if (!CheckGridStat)
-                {
+                if (!CheckGridStat) {
                     this.SetupDataGridView_Statistic();
                     CheckGridStat = true;
-                }
-                else
-                {
+                } else {
                     DataGridView_Statistic.Rows.Clear();
                     DataGridView_Statistic.Visible = true;
                 }
                 var zeilen = Fehlerliste.Count;
                 int zaehler = 1;
-                if (zeilen > 0)
-                {
-                    for (int i = 0; i < zeilen - 3; i++)
-                    {
-                        if (i % 3 == 0)
-                        {
+                if (zeilen > 0) {
+                    for (int i = 0; i < zeilen - 3; i++) {
+                        if (i % 3 == 0) {
                             DataGridView_Statistic.Rows.Add(zaehler, Fehlerliste[i], Fehlerliste[i + 1], Fehlerliste[i + 2]);
                             zaehler++;
                         }
                     }
                     DataGridView_Statistic.Rows.Add("", Fehlerliste[zeilen - 1], Fehlerliste[zeilen - 1], Fehlerliste[zeilen - 1]);
-                }
-                else
-                {
+                } else {
                     if (ShowInfo)
                         MessageBox.Show("Alles korrekt! Demzufolge hat die GridView keinen Inhalt. Vergewissen Sie sich in der Statistik von ihrem phänomenalen Ergebnis!");
                 }
                 button4.Visible = true;
                 button5.Visible = true;
                 this.DrawDiagramm(anteil);
-            }
-            catch (Exception er)
-            {
+            } catch (Exception er) {
                 MessageBox.Show("Unbekannter Fehler..." + Environment.NewLine + Environment.NewLine + er.ToString(), "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
 
             }
         }
 
         //erstellt das Diagramm und lädt es in eine PictureBox
-        private void DrawDiagramm(double prozAnteil)
-        {
+        private void DrawDiagramm(double prozAnteil) {
             string bezeichnung = "rot=fehlerhaft" + Environment.NewLine + "blau=korrekt";
             Dictionary<string, double> dataInkorrekt = new Dictionary<string, double>() { { bezeichnung, 100 - prozAnteil } };
             Dictionary<string, double> dataKorrekt = new Dictionary<string, double>() { { bezeichnung, prozAnteil } };
-            using (Chart chart = new Chart()
-            {
+            using (Chart chart = new Chart() {
                 Height = 200,
                 Width = 220
-            })
-            {
+            }) {
                 chart.Titles.Add("Auswertung(in %)");
-                chart.ChartAreas.Add(new ChartArea("statistic")
-                {
-                    AxisX = new Axis()
-                    {
-                        MajorGrid = new Grid()
-                        {
+                chart.ChartAreas.Add(new ChartArea("statistic") {
+                    AxisX = new Axis() {
+                        MajorGrid = new Grid() {
                             Enabled = false
                         }
                     },
-                    AxisY = new Axis()
-                    {
-                        MajorGrid = new Grid()
-                        {
+                    AxisY = new Axis() {
+                        MajorGrid = new Grid() {
                             LineColor = Color.LightGray,
                             LineDashStyle = ChartDashStyle.Dot,
                         },
@@ -1186,13 +1000,11 @@ namespace Vokabelprogramm
                     }
                 });
 
-                chart.Series.Add(new Series("dataInkorrekt")
-                {
+                chart.Series.Add(new Series("dataInkorrekt") {
                     ChartType = SeriesChartType.Column,
                     Color = Color.Red
                 });
-                chart.Series.Add(new Series("dataKorrekt")
-                {
+                chart.Series.Add(new Series("dataKorrekt") {
                     ChartType = SeriesChartType.Column,
                     Color = Color.Blue
 
@@ -1200,18 +1012,14 @@ namespace Vokabelprogramm
                 });
 
                 // Daten
-                foreach (KeyValuePair<string, double> entry in dataInkorrekt)
-                {
-                    chart.Series["dataInkorrekt"].Points.Add(new DataPoint()
-                    {
+                foreach (KeyValuePair<string, double> entry in dataInkorrekt) {
+                    chart.Series["dataInkorrekt"].Points.Add(new DataPoint() {
                         AxisLabel = entry.Key,
                         YValues = new double[] { entry.Value }
                     });
                 }
-                foreach (KeyValuePair<string, double> entry in dataKorrekt)
-                {
-                    chart.Series["dataKorrekt"].Points.Add(new DataPoint()
-                    {
+                foreach (KeyValuePair<string, double> entry in dataKorrekt) {
+                    chart.Series["dataKorrekt"].Points.Add(new DataPoint() {
                         AxisLabel = entry.Key,
                         YValues = new double[] { entry.Value }
                     });
@@ -1230,28 +1038,21 @@ namespace Vokabelprogramm
         }
 
         //sichert die Statistikdaten in einer Textdatei mit der Endung 'stat'
-        private void button4_Click(object sender, EventArgs e)
-        {
+        private void button4_Click(object sender, EventArgs e) {
             string StringToSave = "";
             string path = Directory_Statistic + "/" + filename_;
-            if (!Directory_Statistic.Exists && CreateDirectory)
-            {
-                if (MessageBox.Show("Um die Statistikauswertungen zu sichern, muss das Verzeichnis " + Directory_Statistic + " neu angelegt werden. Wollen Sie das Verzeichnis anlegen?", "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
+            if (!Directory_Statistic.Exists && CreateDirectory) {
+                if (MessageBox.Show("Um die Statistikauswertungen zu sichern, muss das Verzeichnis " + Directory_Statistic + " neu angelegt werden. Wollen Sie das Verzeichnis anlegen?", "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes) {
                     Directory.CreateDirectory(Directory_Statistic.ToString());
                     CreateDirectory = false;
                     if (ShowInfo)
                         MessageBox.Show(Directory_Statistic + " wurde neu angelegt");
-                }
-                else
-                {
+                } else {
                     MessageBox.Show("Die Statistik kann nicht gesichert werden", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                 }
             }
-            if (Directory_Statistic.Exists || !CreateDirectory)
-            {
-                foreach (string listContent in listBox1.Items)
-                {
+            if (Directory_Statistic.Exists || !CreateDirectory) {
+                foreach (string listContent in listBox1.Items) {
                     if (listContent != Environment.NewLine)
                         StringToSave += listContent + Environment.NewLine;
                 }
@@ -1262,31 +1063,23 @@ namespace Vokabelprogramm
         }
 
         //sichert die eingegegeben Vokabeln,den gesuchten Begriff und die Vorgabe in einer Textdatei mit der Endung 'wVoc'
-        private void button5_Click(object sender, EventArgs e)
-        {
+        private void button5_Click(object sender, EventArgs e) {
             string path = Directory_ErrorVoc + "/" + filename;
-            if (!Directory_ErrorVoc.Exists && CreateDirectory_WVoc)
-            {
-                if (MessageBox.Show("Um die Statistikauswertungen zu sichern, muss das Verzeichnis " + Directory_Statistic + " neu angelegt werden. Wollen Sie das Verzeichnis anlegen?", "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                {
+            if (!Directory_ErrorVoc.Exists && CreateDirectory_WVoc) {
+                if (MessageBox.Show("Um die Statistikauswertungen zu sichern, muss das Verzeichnis " + Directory_Statistic + " neu angelegt werden. Wollen Sie das Verzeichnis anlegen?", "Hint", MessageBoxButtons.YesNo) == DialogResult.Yes) {
                     Directory.CreateDirectory(Directory_ErrorVoc.ToString());
                     CreateDirectory_WVoc = false;
                     if (ShowInfo)
                         MessageBox.Show("Das Verzeichnis " + Directory_ErrorVoc + " und die Datei" + filename + " wurden soeben neu angelegt");
-                }
-                else
-                {
+                } else {
                     if (ShowInfo)
                         MessageBox.Show("Die GridView kann nicht gesichert werden", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                 }
             }
-            if (Directory_ErrorVoc.Exists || !CreateDirectory_WVoc)
-            {
+            if (Directory_ErrorVoc.Exists || !CreateDirectory_WVoc) {
                 string lines = "";
-                if (DataGridView_Statistic.Rows.Count == 0)
-                {
-                    if (ShowInfo)
-                    {
+                if (DataGridView_Statistic.Rows.Count == 0) {
+                    if (ShowInfo) {
                         MessageBox.Show("Die GridView ohne Inhalt zu sichern ergibt keinen Sinn. Der Vorgang wurde folglich abgebrochen", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                         return;
                     }
@@ -1294,13 +1087,10 @@ namespace Vokabelprogramm
                 }
 
                 //bei eins beginnen, damit die Zahlen nicht mitgespeichert werden
-                for (int col = 1; col < DataGridView_Statistic.Columns.Count; col++)
-                {
+                for (int col = 1; col < DataGridView_Statistic.Columns.Count; col++) {
                     //alle Reihen zählen, da zusätzliche nicht hinzugefügt werden können, es also auch keine leere Reihen in der GridView gibt
-                    for (int row = 0; row < DataGridView_Statistic.Rows.Count; row++)
-                    {
-                        if (DataGridView_Statistic.Rows[row].Cells[col].Value.ToString() == "")
-                        {
+                    for (int row = 0; row < DataGridView_Statistic.Rows.Count; row++) {
+                        if (DataGridView_Statistic.Rows[row].Cells[col].Value.ToString() == "") {
                             DataGridView_Statistic.Rows[row].Cells[col].Value = "keine Eingabe";
                         }
 
@@ -1316,33 +1106,24 @@ namespace Vokabelprogramm
         }
 
         //lädt und zeigt die Daten der Statistik an
-        private void ladenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void ladenToolStripMenuItem_Click(object sender, EventArgs e) {
             this.Deactivation(3);
             string path = Directory_Statistic + "/" + filename_;
-            if (!File.Exists(path))
-            {
+            if (!File.Exists(path)) {
                 if (ShowInfo)
                     MessageBox.Show(path + " existiert nicht. Demzufolge können Sie diesen Menupunkt noch nicht auführen. Absolvieren sie zuerst einen Test und sichern Sie dessen Statistikdaten!", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-            }
-            else
-            {
-                if (!CheckGridStatisticList)
-                {
+            } else {
+                if (!CheckGridStatisticList) {
                     this.SetupDataGridView_StatisticListe();
                     CheckGridStatisticList = true;
-                }
-                else
-                {
+                } else {
                     DataGridView_StatisticList.Rows.Clear();
                     DataGridView_StatisticList.Visible = true;
                 }
                 var zeilen = File.ReadAllLines(path);
                 int grenze = zeilen.Length;
-                for (int i = 0; i < grenze - 1; i++)
-                {
-                    if (i % 7 == 0)
-                    {
+                for (int i = 0; i < grenze - 1; i++) {
+                    if (i % 7 == 0) {
                         DataGridView_StatisticList.Rows.Add(zeilen[i], zeilen[i + 1], zeilen[i + 2], zeilen[i + 3], zeilen[i + 4], zeilen[i + 5], zeilen[i + 6]);
                     }
                 }
@@ -1351,38 +1132,31 @@ namespace Vokabelprogramm
         }
 
         //lädt und zeigt die Daten der Fehlerliste an 
-        private void errorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void errorToolStripMenuItem_Click(object sender, EventArgs e) {
             this.Deactivation(3);
             bool InfluenceIndizie = true;
             int IndizieForWhileLoop = 1;
             int RepeatingOfVoc = 0;
             string path = Directory_ErrorVoc + "/" + filename;
-            if (!File.Exists(path))
-            {
+            if (!File.Exists(path)) {
                 if (ShowInfo)
                     MessageBox.Show(filename + " existiert nicht. Demzufolge können Sie diesen Menupunkt noch nicht auführen. Absolvieren sie zuerst einen Test und sichern Sie die GridView der Auswertung!", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
             }
             /*sofern die Datei existiert, kann der Zauber beginnen...*/
-            else
-            {
+            else {
                 var zeilen = File.ReadAllLines(path);
                 int grenze = zeilen.Length;
-                for (int i = 0; i < grenze; i++)
-                {
+                for (int i = 0; i < grenze; i++) {
                     if (zeilen[i] == "ENDE")
                         RepeatingOfVoc++;
                 }
                 RepeatingOfVoc /= 3;
                 /*jetzt weiss ich, wieviel mal durch die Liste iteriert werden muss. Bei 1 Sicherung ergibt sich folgende Rechnung: 3/3=1. Bei 2 Sicherungen ergibt 
                  sich folgende Rechnung:(2*3)/3=2. Bei drei Sicherungen ergibt sich folgende Rechnung:(3*3)/3=3 etc..etc..*/
-                if (!CheckGridErrorList)
-                {
+                if (!CheckGridErrorList) {
                     this.SetupDataGridView_ErrorListe();
                     CheckGridErrorList = true;
-                }
-                else
-                {
+                } else {
                     DataGridView_ErrorList.Rows.Clear();
                     DataGridView_ErrorList.Visible = true;
                 }
@@ -1398,37 +1172,26 @@ namespace Vokabelprogramm
                 int IndizieC = 0;
                 int IndizieD = 0;
                 int IndizieE = 0;
-                while (IndizieForWhileLoop <= RepeatingOfVoc)
-                {
+                while (IndizieForWhileLoop <= RepeatingOfVoc) {
                     //innere Schleife, um die gesuchten Begriffe in das Array zu verfrachten. Entspricht der zweiten Spalte der GridView
-                    for (int i = IndizieA; i < grenze - 1; i++)
-                    {
-                        if (IndizieC == 0)
-                        {
-                            if (zeilen[IndizieA] != "ENDE")
-                            {
+                    for (int i = IndizieA; i < grenze - 1; i++) {
+                        if (IndizieC == 0) {
+                            if (zeilen[IndizieA] != "ENDE") {
                                 ArrayGesucht[IndizieB] = zeilen[i];
                                 IndizieA++;
                                 IndizieB++;
-                            }
-                            else
-                            {
+                            } else {
                                 IndizieA = i;
                                 IndizieC = IndizieB;
                                 IndizieB = 0;
                                 break;
                             }
-                        }
-                        else
-                        {
-                            if (zeilen[IndizieA] != "ENDE")
-                            {
+                        } else {
+                            if (zeilen[IndizieA] != "ENDE") {
                                 ArrayGesucht[IndizieC] = zeilen[i];
                                 IndizieA++;
                                 IndizieC++;
-                            }
-                            else
-                            {
+                            } else {
                                 IndizieA = i;
                                 break;
                             }
@@ -1436,47 +1199,33 @@ namespace Vokabelprogramm
                         }
                     }
                     //innere Schleife, um die eingegebenen Begriffe in das Array zu verfrachten. Entspricht der dritten Spalte der GridView
-                    for (int i = IndizieA + 1; i < grenze; i++)
-                    {
-                        if (zeilen[i] != "ENDE")
-                        {
+                    for (int i = IndizieA + 1; i < grenze; i++) {
+                        if (zeilen[i] != "ENDE") {
                             ArrayEingegeben[IndizieE] = zeilen[i];
                             IndizieE++;
-                        }
-                        else
-                        {
+                        } else {
                             IndizieA = i;
                             break;
                         }
                     }
                     //innere Schleife, um die richtigen Begriffe in das Array zu verfrachten. Entspricht der vierten Spalte der GridView
                     IndizieB = 0;
-                    for (int i = IndizieA + 1; i < grenze; i++)
-                    {
-                        if (InfluenceIndizie)
-                        {
-                            if (zeilen[i] != "ENDE")
-                            {
+                    for (int i = IndizieA + 1; i < grenze; i++) {
+                        if (InfluenceIndizie) {
+                            if (zeilen[i] != "ENDE") {
                                 ArrrayKorrekt[IndizieB] = zeilen[i];
                                 IndizieB++;
-                            }
-                            else
-                            {
+                            } else {
                                 InfluenceIndizie = false;
                                 IndizieA = i + 1;
                                 IndizieD = IndizieB;
                                 break;
                             }
-                        }
-                        else
-                        {
-                            if (zeilen[i] != "ENDE")
-                            {
+                        } else {
+                            if (zeilen[i] != "ENDE") {
                                 ArrrayKorrekt[IndizieD] = zeilen[i];
                                 IndizieD++;
-                            }
-                            else
-                            {
+                            } else {
                                 IndizieA = i + 1;
                                 break;
                             }
@@ -1486,8 +1235,7 @@ namespace Vokabelprogramm
                 }
                 /*Hier ist der Algorithmus zu Ende(dem Debugger sei Dank :=). Was folgt ist die Ausagabe der durch den Algorithmus erzeugten Arrays in der 
                  GridView*/
-                for (int i = 0; i < grenze / 3 - (IndizieForWhileLoop - 1); i++)
-                {
+                for (int i = 0; i < grenze / 3 - (IndizieForWhileLoop - 1); i++) {
                     DataGridView_ErrorList.Rows.Add(i + 1, ArrayGesucht[i], ArrayEingegeben[i], ArrrayKorrekt[i]);
                 }
                 DataGridView_StatisticList.AutoResizeColumns();
@@ -1495,44 +1243,34 @@ namespace Vokabelprogramm
         }
 
         //löscht die Statistikdatei
-        private void statistikLöschenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void statistikLöschenToolStripMenuItem_Click(object sender, EventArgs e) {
             this.Deactivation(3);
             string path = Directory_Statistic + "/" + filename_;
-            if (File.Exists(path))
-            {
+            if (File.Exists(path)) {
                 DialogResult result1 = MessageBox.Show("Wollen sie wirklich die Datei " + path + " löschen?", "Important Question", MessageBoxButtons.YesNo);
-                if (result1 == DialogResult.Yes)
-                {
+                if (result1 == DialogResult.Yes) {
                     File.Delete(path);
                     if (ShowInfo)
                         MessageBox.Show("Die Datei " + path + " wurde soeben gelöscht");
                 }
-            }
-            else
-            {
+            } else {
                 if (ShowInfo)
                     MessageBox.Show("Was nicht exisitert, kann auch nicht gelöscht werden. Informieren Sie sich über die HELP-Option!", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
             }
         }
 
         //löscht die Errorlistdatei
-        private void fehlerlisteLöschenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        private void fehlerlisteLöschenToolStripMenuItem_Click(object sender, EventArgs e) {
             this.Deactivation(3);
             string path = Directory_ErrorVoc + "/" + filename;
-            if (File.Exists(path))
-            {
+            if (File.Exists(path)) {
                 DialogResult result1 = MessageBox.Show("Wollen sie wirklich die Datei " + path + " löschen?", "Important Question", MessageBoxButtons.YesNo);
-                if (result1 == DialogResult.Yes)
-                {
+                if (result1 == DialogResult.Yes) {
                     File.Delete(path);
                     if (ShowInfo)
                         MessageBox.Show("Die Datei " + path + " wurde soeben gelöscht");
                 }
-            }
-            else
-            {
+            } else {
                 if (ShowInfo)
                     MessageBox.Show("Was nicht exisitert, kann auch nicht gelöscht werden. Informieren Sie sich über die HELP-Option!", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
             }

@@ -93,7 +93,7 @@ namespace Vokabelprogramm
                 g.DrawString("Contact:" + Environment.NewLine +
                 "    t.kipp@eisvogel-online-software.de" + Environment.NewLine +
                 "    0152/37389041" + Environment.NewLine +
-                "    http://tklustig.ddns.net:1026", mediumFont, Brushes.Black, 30, 110);
+                "    https://tklustig.de", mediumFont, Brushes.Black, 30, 110);
                 g.DrawString("programming language: C# (WindowsForms)", smallFont, Brushes.Turquoise, 30, 225);
                 g.DrawString("click me to get closed", VsmallFont, Brushes.Beige, 30, 255);
             }

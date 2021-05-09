@@ -59,5 +59,14 @@ namespace Vokabelprogramm.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.IO.UnmanagedMemoryStream ähnlich wie System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream tetris {
+            get {
+                return ResourceManager.GetStream("tetris", resourceCulture);
+            }
+        }
     }
 }
